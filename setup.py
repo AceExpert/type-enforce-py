@@ -5,7 +5,7 @@ with open("./README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="type-enforce",
-    version="3.8.7",
+    version="3.9.0",
     author="Cybertron",
     packages=['type_enforce'],
     description="Supports enforcing type annotations on functions and coroutines. Complete support for types from typing module.",

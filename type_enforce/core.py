@@ -6,7 +6,7 @@ from .utils import get_defaults
 
 def enforce_type(func: typing.Union[typing.Callable, typing.Coroutine]) -> typing.Callable:
     def wrapper(*args, **kwargs):
-        defs, args, kwargs = get_defaults(func), list(args).copy(), kwargs.copy()
+        defs, args, kwargs, return_typ = get_defaults(func), list(args).copy(), kwargs.copy(), func.__annotations__.pop('return', None)
         for key, val in defs.items():
             print(len(args) , val[2])
             if val[1] in [Parameter.POSITIONAL_ONLY, Parameter.VAR_POSITIONAL, Parameter.POSITIONAL_OR_KEYWORD] and len(args)-1 > val[2] and key not in kwargs:
@@ -16,6 +16,7 @@ def enforce_type(func: typing.Union[typing.Callable, typing.Coroutine]) -> typin
         annotation_vals = {list(func.__code__.co_varnames).index(key):vals for key, vals in func.__annotations__.items()}
         args = [argument_processor(annotation_vals[j], i) if j in list(annotation_vals.keys()) and i != None else i for i,j in zip(args, range(len(args)))]
         kwargs = {key:argument_processor(func.__annotations__[key], value) if key in func.__annotations__ and value != None else value for key, value in kwargs.items()}
+        if return_typ: func.__annotations__.__setitem__('return', return_typ)
         if inspect.iscoroutinefunction(func): 
             return asyncio.run(argument_processor(func.__annotations__['return'], func(*args, **kwargs)) if 'return' in func.__annotations__ else func(*args, **kwargs))
         else:

@@ -12,7 +12,7 @@ class VersionInfo(NamedTuple):
     serial: int
 
 __all__: List[str] = ['enforce_type', 'argument_processor', 'utils']
-__version__: str = "3.8.7"
-version_info: VersionInfo = VersionInfo(major=3, minor=8, micro=7, releaselevel='final', serial=0)
+__version__: str = "3.9.0"
+version_info: VersionInfo = VersionInfo(major=3, minor=9, micro=0, releaselevel='final', serial=0)
 __author__: str = "Cybertron"
 __copyright__: str = "Copyright (c) 2021 - present Cybertron"

@@ -1,4 +1,4 @@
-import typing, inspect
+import typing, inspect, warnings
 from collections import *
 from collections import abc
 
@@ -66,6 +66,7 @@ def argument_processor(typ: typing.Any, val: typing.Any) -> typing.Any:
         iteron = val.values() if isinstance(val, dict) else val
         prval = {key: argument_processor(typing.get_args(typ)[0], value) for key, value in zip(val.keys(), iteron)} if isinstance(val, dict) else [argument_processor(typing.get_args(typ)[0], value) for value in iteron]
         return typing.get_origin(typ)(prval)
+    elif typ in [typing.T]: return type(val)
     elif hasattr(abc, typ._name) and typing.get_origin(typ):
         if isinstance(val, typing.get_origin(typ)):
             return val
@@ -74,3 +75,6 @@ def argument_processor(typ: typing.Any, val: typing.Any) -> typing.Any:
             else: raise TypeError(f"{val} isn't a {typ._name}")
         else:
             raise TypeError(f"{val} isn't a {typ._name}")
+    else:
+        warnings.warn(f"The type {typ} is either not a type, not available or not supported. So the value is passed as is.", RuntimeWarning)
+        return val
