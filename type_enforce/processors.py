@@ -43,7 +43,7 @@ def argument_processor(typ: typing.Any, val: typing.Any) -> typing.Any:
                 return argument_processor(i, val)
             except Exception:
                 pass
-        if typing.Any in types: return val 
+        if typing.Any in types or typing.Generic in [typing.get_origin(i) for i in types]: return val 
         if type(None) in types: return None
         raise TypeError(f"{val} couldn't be converted or doesn't match any of the specified types.")
     elif typing.get_origin(typ) == typing.Literal:
@@ -57,11 +57,15 @@ def argument_processor(typ: typing.Any, val: typing.Any) -> typing.Any:
         return typing.get_origin(typ)([argument_processor(typing.get_args(typ)[0], i) for i in val]) if typing.get_args(typ) else typing.get_origin(typ)(val)
     elif typing.get_origin(typ) in [dict, OrderedDict, ChainMap, abc.ItemsView]:
         return typing.get_origin(typ)({argument_processor(typing.get_args(typ)[0], key) if typing.get_args(typ) else key: argument_processor(typing.get_args(typ)[1], value) if typing.get_args(typ) else val for key, value in val.items()})
+    elif typing.get_origin(typ) in [tuple]:
+        return typing.get_origin(typ)(argument_processor(tuptype, tupval) for tuptype, tupval in zip(typing.get_args(typ), val)) if typing.get_args(typ) else typing.get_origin(typ)(val)
     elif typing.get_origin(typ) in [deque, Counter]:
         if not typing.get_args(typ): return typing.get_origin(typ)(val)
         iteron = val.values() if isinstance(val, dict) else val
         prval = {key: argument_processor(typing.get_args(typ)[0], value) for key, value in zip(val.keys(), iteron)} if isinstance(val, dict) else [argument_processor(typing.get_args(typ)[0], value) for value in iteron]
         return typing.get_origin(typ)(prval)
+    elif typing.get_origin(typ) in [typing.Generic, typing.Any]:
+        return val
     elif hasattr(abc, typ._name) and typing.get_origin(typ):
         if isinstance(val, typing.get_origin(typ)):
             return val
