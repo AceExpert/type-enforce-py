@@ -5,7 +5,9 @@ from collections import abc
 from .utils import isiterable
 
 def argument_processor(typ: typing.Any, val: typing.Any) -> typing.Any:
-    if isinstance(typ, abc.Callable) and not typing.get_origin(typ):
+    if typing.get_origin(typ) in [typing.Generic] or typ == typing.Any:
+        return val
+    elif isinstance(typ, abc.Callable) and not typing.get_origin(typ):
         try:
             isinstance(val, typ)
         except TypeError:
@@ -64,8 +66,6 @@ def argument_processor(typ: typing.Any, val: typing.Any) -> typing.Any:
         iteron = val.values() if isinstance(val, dict) else val
         prval = {key: argument_processor(typing.get_args(typ)[0], value) for key, value in zip(val.keys(), iteron)} if isinstance(val, dict) else [argument_processor(typing.get_args(typ)[0], value) for value in iteron]
         return typing.get_origin(typ)(prval)
-    elif typing.get_origin(typ) in [typing.Generic, typing.Any]:
-        return val
     elif hasattr(abc, typ._name) and typing.get_origin(typ):
         if isinstance(val, typing.get_origin(typ)):
             return val
